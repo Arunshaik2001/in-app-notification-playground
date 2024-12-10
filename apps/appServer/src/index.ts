@@ -10,12 +10,9 @@ const app = express();
 // Set up port
 const port = process.env.APP_SERVER_PORT || 3000;
 
-app.use(
-    cors({
-      origin: ["http://localhost:3001", "http://localhost:3000"],
-      credentials: true,
-    })
-);app.use(express.json());
+app.use(cors());
+app.use(express.json());
+app.options('*', cors());
 app.use("/v1/send", sendRouter);
 app.use("/v1/getToken", authRouter);
 
