@@ -16,6 +16,9 @@ const geistMono = localFont({
 export const metadata: Metadata = {
     title: "In-App Notifications",
     description: "In-App Notifications Playground",
+    icons: {
+        icon: '/icon.jpg',
+    }
 };
 
 export default function RootLayout({
