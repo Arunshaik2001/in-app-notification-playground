@@ -10,6 +10,10 @@ const app = express();
 // Set up port
 const port = process.env.APP_SERVER_PORT || 3000;
 
+app.use((req, res, next) => {
+  console.log(req.headers)
+  next();
+});
 app.use(cors({
   origin: '*'
 }));
