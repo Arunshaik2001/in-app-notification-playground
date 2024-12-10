@@ -29,7 +29,7 @@ export default function NotificationForm() {
 
         setLoading(true);
         try {
-            await fetch("http://localhost:3002/v1/send", {
+            await fetch(`${process.env.NEXT_PUBLIC_APP_SERVER_URL}/send`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

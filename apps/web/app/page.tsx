@@ -18,7 +18,7 @@ export default function Home() {
         },
     };
 
-    const { isConnected, notifications} = useWebSocketWithNotifications("ws://localhost:3001", initialPayload);
+    const { isConnected, notifications} = useWebSocketWithNotifications(`${process.env.NEXT_PUBLIC_WEBSOCKET_URL}`, initialPayload);
 
     return (
         <div className="relative flex flex-col lg:flex-row gap-4 w-full min-h-screen dark:bg-gray-800">
