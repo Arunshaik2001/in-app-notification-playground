@@ -18,7 +18,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification }) => 
         </div>
         {notification.imageUrl && (
             <div className="mb-4">
-                <Image
+                <img
                     src={notification.imageUrl}
                     alt="Notification"
                     className="w-full h-32 object-contain"

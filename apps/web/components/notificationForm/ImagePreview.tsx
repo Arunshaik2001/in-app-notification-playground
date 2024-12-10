@@ -17,7 +17,7 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({ imageUrl, setImageUrl }) =>
         />
         {imageUrl && (
             <div className="w-full flex justify-center items-center">
-                <Image
+                <img
                     src={imageUrl}
                     alt="Preview"
                     className="max-w-full max-h-40 rounded-lg border border-gray-200 shadow-sm mb-4 object-contain"
