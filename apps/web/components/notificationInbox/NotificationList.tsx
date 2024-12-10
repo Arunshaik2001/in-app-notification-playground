@@ -1,5 +1,6 @@
 import NotificationItem from "./NotificationItem";
 import {Notification} from "@repo/types/types";
+import React from "react";
 
 interface NotificationListProps {
     notifications: Notification[];

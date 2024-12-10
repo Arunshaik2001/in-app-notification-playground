@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import ScrollToTopButton from "./ScrollToTopButton";
 import NotificationList from "./NotificationList";
 import {Notification} from "@repo/types/types";
@@ -9,7 +9,7 @@ interface NotificationInboxProps {
     notifications: Notification[];
 }
 
-const NotificationInbox: React.FC<NotificationInboxProps> = ({ notifications }) => {
+const NotificationInbox: React.FC<NotificationInboxProps> = ({ notifications }: {notifications: Notification[]}) => {
     const [showScrollToTop, setShowScrollToTop] = useState(false);
     const notificationsContainerRef = useRef<HTMLDivElement>(null);
     const lastNotificationCount = useRef<number>(0);
@@ -20,7 +20,7 @@ const NotificationInbox: React.FC<NotificationInboxProps> = ({ notifications }) 
 
         const handleScroll = () => {
             if (container) {
-                const { scrollTop, scrollHeight, clientHeight } = container;
+                const { scrollTop } = container;
 
                 if (scrollTop < 20) {
                     setHasScrolled(false);

@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import {Notification} from "@repo/types/types";
+import React from "react";
+import Image from "next/image";
 
 interface NotificationItemProps {
     notification: Notification;
@@ -16,7 +18,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification }) => 
         </div>
         {notification.imageUrl && (
             <div className="mb-4">
-                <img
+                <Image
                     src={notification.imageUrl}
                     alt="Notification"
                     className="w-full h-32 object-contain"
