@@ -4,7 +4,7 @@ import {rawDataToJson} from "@repo/utils/utils";
 import http from "http";
 import jwt from 'jsonwebtoken';
 
-export const clients: { [key: string]: Array<WebSocket> } = {};
+export const clients: Map<string, Array<WebSocket>> = new Map<string, Array<WebSocket>>();
 export const clientsNotifications: { [key: string]: Notification[] } = {};
 
 export const setupWebSocketServer = (server: http.Server): WebSocketServer => {
@@ -35,9 +35,10 @@ export const setupWebSocketServer = (server: http.Server): WebSocketServer => {
             const data: WebsocketTransactionPayload = rawDataToJson(dataJson);
             if (data.type === 'identifier') {
                 clientId = String(data.content.data.subId);
-                const clientSockets = clients[clientId] ?? [];
+                const clientSockets = clients.get(clientId) ?? [];
                 clientSockets.unshift(ws)
-                clients[clientId] = clientSockets;
+                clients.set(clientId, clientSockets);
+                console.log(`total unique connections live: ${clients.size}`);
                 if(clientsNotifications[clientId] && clientsNotifications[clientId]!.length > 0) {
                     const payLoad: WebsocketTransactionPayload = {
                         type: "message",
@@ -66,8 +67,11 @@ export const setupWebSocketServer = (server: http.Server): WebSocketServer => {
         ws.on("close", (code) => {
             console.log(`WebSocket connection closed: ${code}`);
             if (clientId) {
-                if(clients[clientId]!.includes(ws)){
-                    clients[clientId] = clients[clientId]!.filter(socket => socket !== ws);
+                if((clients.get(clientId) ?? [])!.includes(ws)){
+                    clients.set(clientId, (clients.get(clientId) ?? [])!.filter(socket => socket !== ws));
+                    if((clients.get(clientId) ?? []).length == 0){
+                        clients.delete(clientId);
+                    }
                 }
             }
         });
@@ -77,7 +81,7 @@ export const setupWebSocketServer = (server: http.Server): WebSocketServer => {
 };
 
 export const sendNotificationsToClient = (subId: string, payload: WebsocketTransactionPayload): void => {
-    for (let clientSocket of (clients[subId] ?? [])) {
+    for (let clientSocket of (clients.get(subId) ?? [])) {
         sendNotificationToClient(clientSocket, payload);
     }
 };
