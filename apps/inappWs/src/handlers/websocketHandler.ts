@@ -47,7 +47,7 @@ export const setupWebSocketServer = (server: http.Server): WebSocketServer => {
                             }
                         }
                     };
-                    sendNotificationToClient(clientId, payLoad)
+                    sendNotificationToClient(ws, payLoad)
                 }
             }
             else if (data.type === 'ping') {
@@ -76,10 +76,14 @@ export const setupWebSocketServer = (server: http.Server): WebSocketServer => {
     return wss;
 };
 
-export const sendNotificationToClient = (subId: string, payload: WebsocketTransactionPayload): void => {
+export const sendNotificationsToClient = (subId: string, payload: WebsocketTransactionPayload): void => {
     for (let clientSocket of (clients[subId] ?? [])) {
-        if (clientSocket && clientSocket.readyState === WebSocket.OPEN) {
-            clientSocket.send(JSON.stringify(payload));
-        }
+        sendNotificationToClient(clientSocket, payload);
+    }
+};
+
+export const sendNotificationToClient = (clientSocket: WebSocket, payload: WebsocketTransactionPayload): void => {
+    if (clientSocket && clientSocket.readyState === WebSocket.OPEN) {
+        clientSocket.send(JSON.stringify(payload));
     }
 };

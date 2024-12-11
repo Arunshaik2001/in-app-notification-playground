@@ -1,6 +1,6 @@
 import { redisSubscriber } from "../config/redis";
 import {Notification, RedisMessageHandler, WebsocketTransactionPayload} from "@repo/types/types";
-import {clients, clientsNotifications, sendNotificationToClient} from "./websocketHandler";
+import {clients, clientsNotifications, sendNotificationsToClient} from "./websocketHandler";
 
 export const setupRedisSubscription = async (): Promise<void> => {
     try {
@@ -40,7 +40,7 @@ const handleRedisMessage: RedisMessageHandler = (message, channel) => {
                     },
                 },
             };
-            sendNotificationToClient(notification.subId, payload);
+            sendNotificationsToClient(notification.subId, payload);
 
             const clientArray = (clientsNotifications[notification.subId] ?? []);
             clientArray.unshift(...payload.content.data.notifications ?? []);

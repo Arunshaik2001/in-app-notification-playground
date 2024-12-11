@@ -18,7 +18,7 @@ authRouter.post('/', async (req: Request, res: Response, next: NextFunction) => 
         return res.status(401).send({ error: "Invalid credentials" });
     }
 
-    const token = jwt.sign({ subId }, process.env.JWT_SECRET_KEY!, { expiresIn: process.env.TOKEN_EXPIRATION });
+    const token = jwt.sign({ subId }, process.env.JWT_SECRET_KEY!, { expiresIn: process.env.TOKEN_EXPIRATION || "1h" });
 
     console.log('Authentication Token:', token);
     res.status(200).send({ token });
