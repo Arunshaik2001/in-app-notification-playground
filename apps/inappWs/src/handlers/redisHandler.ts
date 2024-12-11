@@ -26,7 +26,7 @@ const handleRedisMessage: RedisMessageHandler = (message, channel) => {
     try {
         const notification = JSON.parse(message);
 
-        if (notification.subId && clients[notification.subId]) {
+        if (notification.subId && clients.get(notification.subId)) {
             const payload: WebsocketTransactionPayload = {
                 type: "message",
                 content: {
