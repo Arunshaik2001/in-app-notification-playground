@@ -10,20 +10,9 @@ const app = express();
 // Set up port
 const port = process.env.APP_SERVER_PORT || 3000;
 
-app.use((req, res, next) => {
-  console.log(req.headers)
-  next();
-});
 app.use(cors({
   origin: '*'
 }));
-app.use((req, res, next) => {
-  console.log(req.headers)
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  next();
-});
 app.use(express.json());
 
 app.use("/v1/send", sendRouter);
