@@ -42,7 +42,7 @@ export const NotificationIcon: React.FC<{}> = () => {
                 )}
             </div>
             {isOpen && (
-                <div className="absolute w-full">
+                <div className="w-full h-full">
                     <NotificationInbox notifications={notifications}/>
                 </div>
             )}
