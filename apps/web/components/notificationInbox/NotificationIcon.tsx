@@ -1,8 +1,5 @@
 import React, {useState} from "react";
 import {NotificationInbox} from "./index";
-import useIdentifier from "../../hooks/useIdentifier";
-import {WebsocketTransactionPayload} from "@repo/types/types";
-import useWebSocketWithNotifications from "../../hooks/useWebSocket";
 import {BellIcon} from "@heroicons/react/24/outline";
 import {motion} from "framer-motion";
 import {useWebSocket} from "../../context/WebsocketContext";
