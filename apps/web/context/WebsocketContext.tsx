@@ -78,7 +78,6 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children,u
             const notificationPayload: WebsocketTransactionPayload = JSON.parse(event.data);
             if(notificationPayload.type !== "message"){
                 if(notificationPayload.type === 'unreadCount'){
-                    console.log("Received unreadCount", notificationPayload.content.data.notificationsUnreadCount || 0);
                     setUnReadCount(notificationPayload.content.data.notificationsUnreadCount || 0);
                 }
                 return;
@@ -109,7 +108,6 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children,u
     };
 
     const updateNotificationStatus = (notificationId: number, status: 'read' | 'unread') => {
-        console.log(notificationId);
         // Send the updated status to the WebSocket server
         const payloadData: WebsocketTransactionPayload = {
             type: 'notificationStatus',
