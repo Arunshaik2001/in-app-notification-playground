@@ -31,11 +31,15 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification }) => 
                 </div>
             )}
             <div className="flex justify-between items-start">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                <h3
+                    className="text-lg font-semibold text-gray-800 dark:text-gray-200 break-words whitespace-normal max-w-full"
+                >
                     {notification.title}
                 </h3>
             </div>
-            <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
+            <p
+                className="text-sm text-gray-700 dark:text-gray-300 mt-2 break-words whitespace-normal max-w-full"
+            >
                 {notification.body}
             </p>
             {notification.actions?.length > 0 && (
