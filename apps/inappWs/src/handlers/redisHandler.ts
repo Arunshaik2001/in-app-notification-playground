@@ -1,6 +1,11 @@
 import { redisSubscriber } from "../config/redis";
-import {Notification, RedisMessageHandler, WebsocketTransactionPayload} from "@repo/types/types";
-import {clients, clientsNotifications, sendNotificationsToClient} from "./websocketHandler";
+import {RedisMessageHandler, WebsocketTransactionPayload} from "@repo/types/types";
+import {
+    clients,
+    clientsNotifications,
+    sendNotificationsToClient
+} from "./websocketHandler";
+import {generateRandom7DigitNumber} from "@repo/utils/utils";
 
 export const setupRedisSubscription = async (): Promise<void> => {
     try {
@@ -35,6 +40,8 @@ const handleRedisMessage: RedisMessageHandler = (message, channel) => {
                             {
                                 ...notification,
                                 receivedAt: Date.now(),
+                                id: generateRandom7DigitNumber(),
+                                unRead: true,
                             }
                         ]
                     },

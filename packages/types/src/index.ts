@@ -10,7 +10,7 @@ export type SendNotificationRequest = {
 
 export type NotificationType = "feed" | "in_app:card" | "in_app:banner" | "in_app:modal";
 
-type MessageType = "identifier" | "message" | "ping";
+type MessageType = "identifier" | "message" | "ping" | "notificationStatus" | 'unreadCount';
 
 export type WebsocketTransactionPayload = {
     type: MessageType;
@@ -24,7 +24,7 @@ export type WebsocketTransactionPayload = {
 
 export type RedisMessageHandler = (message: string, channel: string) => void;
 
-export type Notification = SendNotificationRequest & {receivedAt: number};
+export type Notification = SendNotificationRequest & {id: number, unRead: boolean, receivedAt: number};
 
 export type Action = {
     actionUrl: string;
