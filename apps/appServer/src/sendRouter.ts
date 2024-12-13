@@ -17,7 +17,11 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
 
         await redisClient.connect();
         await redisClient.publish(body.channel, JSON.stringify(body));
-        res.send(`Message published to channel "${body.channel}"`);
+        res.send({
+            data: {
+                message: `Notification has been queued."`
+            }
+        });
     } catch (err) {
         console.error('Error during publishing:', err);
     } finally {
