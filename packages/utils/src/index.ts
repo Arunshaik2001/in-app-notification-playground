@@ -26,7 +26,3 @@ export const rawDataToJson = (data: RawData) => {
   }
 };
 
-export const colors = [
-  "bg-blue-500 hover:bg-blue-600",
-  "bg-red-500 hover:bg-red-600"
-];

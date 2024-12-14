@@ -1,12 +1,15 @@
 import { motion } from "framer-motion";
 import {Notification} from "@repo/types/types";
 import React from "react";
-import {colors} from "@repo/utils/utils";
-import {BellIcon} from "@heroicons/react/24/outline";
 
 interface NotificationItemProps {
     notification: Notification;
 }
+
+const colors = [
+    "bg-blue-500 hover:bg-blue-600",
+    "bg-green-500 hover:bg-green-600"
+]
 
 const NotificationItem: React.FC<NotificationItemProps> = ({ notification }) => (
     <motion.div
