@@ -3,10 +3,9 @@ import { WebsocketTransactionPayload, Notification } from "@repo/types/types";
 import {rawDataToJson} from "@repo/utils/utils";
 import http from "http";
 import jwt from 'jsonwebtoken';
+import {redisCacheHandler} from "./redisCacheHandler";
 
 export const clients: Map<string, Array<WebSocket>> = new Map<string, Array<WebSocket>>();
-export const clientsNotifications: { [key: string]: Notification[] } = {};
-export const clientsReadNotificationsMap: { [key: string]: Set<number> } = {};
 
 export const setupWebSocketServer = (server: http.Server): WebSocketServer => {
     const wss = new WebSocketServer({ server });
@@ -32,25 +31,30 @@ export const setupWebSocketServer = (server: http.Server): WebSocketServer => {
 
         ws.on("error", console.error);
 
-        ws.on("message", (dataJson) => {
+        ws.on("message", async (dataJson) => {
             const data: WebsocketTransactionPayload = rawDataToJson(dataJson);
             if (data.type === 'identifier') {
                 clientId = String(data.content.data.subId);
                 const clientSockets = clients.get(clientId) ?? [];
-                clientSockets.unshift(ws)
+                clientSockets.unshift(ws);
                 clients.set(clientId, clientSockets);
-                console.log(`total unique connections live: ${clients.size}`);
-                if(clientsNotifications[clientId] && clientsNotifications[clientId]!.length > 0) {
+                console.log(`Total unique connections live: ${clients.size}`);
+
+                // Fetch notifications from Redis cache
+                const cachedNotifications = await redisCacheHandler.getNotificationsFromCache(clientId);
+                const unreadCount = await redisCacheHandler.getUnreadCount(clientId);
+
+                if (cachedNotifications.length > 0) {
                     const payLoad: WebsocketTransactionPayload = {
                         type: "message",
                         content: {
                             data: {
-                                notifications: clientsNotifications[clientId]!,
-                                notificationsUnreadCount: clientsNotifications[clientId]!.length - (clientsReadNotificationsMap[clientId]?.size ?? 0),
-                            }
-                        }
+                                notifications: cachedNotifications,
+                                notificationsUnreadCount: unreadCount,
+                            },
+                        },
                     };
-                    sendNotificationToClient(ws, payLoad)
+                    sendNotificationToClient(ws, payLoad);
                 }
             }
             else if (data.type === 'ping') {
@@ -64,16 +68,12 @@ export const setupWebSocketServer = (server: http.Server): WebSocketServer => {
                 }));
             }
             else if (data.type === 'notificationStatus') {
-                if (clientsNotifications[clientId] && clientsNotifications[clientId]!.length > 0) {
-                    clientsNotifications[clientId]!.forEach((notification) => {
-                        if (notification.id === data.content.data.notificationId) {
-                            notification.unRead = !(data.content.data.status === 'read');
-                            if (!notification.unRead) {
-                                clientsReadNotificationsMap[notification.subId] = (clientsReadNotificationsMap[notification.subId] ?? new Set).add(notification.id);
-                            }
-                        }
-                    });
-                    sendUnReadCountMessageToClients(data.content.data.subId);
+                const notificationId = data.content.data.notificationId;
+                const status = data.content.data.status;
+
+                if (notificationId) {
+                    await updateNotificationStatusInCache(clientId, notificationId, status === 'read');
+                    sendUnReadCountMessageToClients(clientId);
                 }
             }
         });
@@ -94,29 +94,53 @@ export const setupWebSocketServer = (server: http.Server): WebSocketServer => {
     return wss;
 };
 
+const updateNotificationStatusInCache = async (subId: string, notificationId: number, isRead: boolean): Promise<void> => {
+    const notifications = await redisCacheHandler.getNotificationsFromCache(subId);
+    const readNotifications = await redisCacheHandler.getReadNotificationsFromCache(subId);
+
+    // Update notification status
+    const updatedNotifications = notifications.map(notification => {
+        if (notification.id === notificationId) {
+            notification.unRead = !isRead;
+        }
+        return notification;
+    });
+
+    // Update read notifications
+    if (isRead) {
+        readNotifications.add(notificationId);
+    } else {
+        readNotifications.delete(notificationId);
+    }
+
+    // Save updated data to Redis
+    await redisCacheHandler.setNotificationsInCache(subId, updatedNotifications);
+    await redisCacheHandler.setReadNotificationsInCache(subId, readNotifications);
+};
+
 export const sendNotificationsToClient = (subId: string, payload: WebsocketTransactionPayload): void => {
     for (let clientSocket of (clients.get(subId) ?? [])) {
         sendNotificationToClient(clientSocket, payload);
-        setTimeout(() => {
-            sendUnReadCountMessageToClient(clientSocket, subId);
+        setTimeout(async () => {
+            await sendUnReadCountMessageToClient(clientSocket, subId);
         }, 1000);
     }
 };
 
 const sendUnReadCountMessageToClients = (subId: string): void => {
     for (let clientSocket of (clients.get(subId) ?? [])) {
-        setTimeout(() => {
-            sendUnReadCountMessageToClient(clientSocket, subId);
+        setTimeout(async () => {
+            await sendUnReadCountMessageToClient(clientSocket, subId);
         }, 1000);
     }
 }
 
-const sendUnReadCountMessageToClient = (clientSocket: WebSocket, subId: string): void => {
+const sendUnReadCountMessageToClient = async (clientSocket: WebSocket, subId: string): Promise<void> => {
     const unReadCountPayload: WebsocketTransactionPayload = {
         type: 'unreadCount',
         content: {
             data: {
-                notificationsUnreadCount: clientsNotifications[subId]!.length - (clientsReadNotificationsMap[subId]?.size ?? 0),
+                notificationsUnreadCount: await redisCacheHandler.getUnreadCount(subId),
             }
         }
     }

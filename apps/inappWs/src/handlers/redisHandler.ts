@@ -1,21 +1,21 @@
-import { redisSubscriber } from "../config/redis";
+import { redisSubscriberConfig } from "../config/redisSubscriberConfig";
 import {RedisMessageHandler, WebsocketTransactionPayload} from "@repo/types/types";
 import {
     clients,
-    clientsNotifications,
     sendNotificationsToClient
 } from "./websocketHandler";
 import {generateRandom7DigitNumber} from "@repo/utils/utils";
+import {redisCacheHandler} from "./redisCacheHandler";
 
 export const setupRedisSubscription = async (): Promise<void> => {
     try {
-        await redisSubscriber.connect();
+        await redisSubscriberConfig.connect();
 
-        await redisSubscriber.subscribe('feed', (message, channel) => {
+        await redisSubscriberConfig.subscribe('feed', (message, channel) => {
             handleRedisMessage(message, channel);
         });
 
-        await redisSubscriber.subscribe('in_app', (message, channel) => {
+        await redisSubscriberConfig.subscribe('in_app', (message, channel) => {
             handleRedisMessage(message, channel);
         });
 
@@ -25,7 +25,7 @@ export const setupRedisSubscription = async (): Promise<void> => {
     }
 };
 
-const handleRedisMessage: RedisMessageHandler = (message, channel) => {
+const handleRedisMessage: RedisMessageHandler = async (message, channel) => {
     console.log(`Message received on channel "${channel}": ${message}`);
 
     try {
@@ -49,9 +49,17 @@ const handleRedisMessage: RedisMessageHandler = (message, channel) => {
             };
             sendNotificationsToClient(notification.subId, payload);
 
-            const clientArray = (clientsNotifications[notification.subId] ?? []);
-            clientArray.unshift(...payload.content.data.notifications ?? []);
-            clientsNotifications[notification.subId] = clientArray;
+            // Retrieve existing notifications from Redis
+            const existingNotifications = await redisCacheHandler.getNotificationsFromCache(notification.subId);
+
+            // Add the new notification to the cached list
+            const updatedNotifications = [
+                ...payload.content.data.notifications ?? [],
+                ...existingNotifications,
+            ];
+
+            // Update the cached notifications in Redis
+            await redisCacheHandler.setNotificationsInCache(notification.subId, updatedNotifications);
         }
     } catch (err) {
         console.error('Failed to handle Redis message:', err);
