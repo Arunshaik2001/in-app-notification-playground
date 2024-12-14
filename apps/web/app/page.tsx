@@ -26,20 +26,22 @@ export default function Home() {
                     <ThemeToggle/>
                 </div>
 
-                <div
-                    className="lg:w-1/3 w-full bg-white dark:bg-gray-800 dark:text-gray-200 p-4 shadow rounded mt-10 lg:mt-0 lg:overflow-y-auto h-full">
-                    <h2 className="text-lg font-bold mb-5 text-gray-800 dark:text-gray-100">
-                        In-App Notification
-                    </h2>
-                    <NotificationForm/>
-                </div>
-
-                <div className="flex justify-center w-full bg-gray-100 dark:bg-gray-900">
-                    <div className="w-full lg:w-[45%] dark:text-gray-200 p-4 mt-20">
+                <div className="flex flex-col-reverse w-full lg:flex-row lg:gap-4">
+                    <div
+                        className="lg:w-1/3 w-full bg-white dark:bg-gray-800 dark:text-gray-200 p-4 shadow rounded mt-10 lg:mt-0 lg:overflow-y-auto h-full">
                         <h2 className="text-lg font-bold mb-5 text-gray-800 dark:text-gray-100">
-                            Notifications
+                            In-App Notification
                         </h2>
-                        <NotificationIcon/>
+                        <NotificationForm/>
+                    </div>
+
+                    <div className="flex justify-center lg:flex-grow bg-gray-100 dark:bg-gray-900">
+                        <div className="w-full md:w-[60%] dark:text-gray-200 p-4 mt-20">
+                            <h2 className="text-lg font-bold mb-5 text-gray-800 dark:text-gray-100">
+                                Notifications
+                            </h2>
+                            <NotificationIcon/>
+                        </div>
                     </div>
                 </div>
             </div>
