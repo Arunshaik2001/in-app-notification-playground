@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, {createContext, useContext, useEffect, useRef, useState} from 'react';
 import {Notification, WebsocketTransactionPayload} from "@repo/types/types";
 
 interface WebSocketContextType {
@@ -85,7 +85,12 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children,u
 
             const notifications = notificationPayload.content.data.notifications ?? [];
             // Add the new notification to the list
-            setNotifications((prevNotifications) => [...notifications, ...prevNotifications]);
+            setNotifications((prevNotifications) => {
+                const allNotifications = [...notifications, ...prevNotifications];
+                return Array.from(
+                    new Map(allNotifications.map(notification => [notification.id, notification])).values()
+                );
+            });
             setUnReadCount(notificationPayload.content.data.notificationsUnreadCount || 0);
         };
 
