@@ -11,7 +11,7 @@ const app = express();
 const port = process.env.APP_SERVER_PORT || 3000;
 
 app.use(cors({
-  origin: '*'
+  origin: ['https://inapp-notifications.dev-boi.com/', 'http://localhost:3000']
 }));
 app.use(express.json());
 
