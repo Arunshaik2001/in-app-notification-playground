@@ -57,7 +57,7 @@ const NotificationList: React.FC<NotificationListProps> = ({ notifications }: No
     }
 
     return (
-        <ul className="space-y-4">
+        <ul className="space-y-4 p-2">
             {notifications.map((notification, index) => (
                 <NotificationItem key={index} notification={notification} />
             ))}
