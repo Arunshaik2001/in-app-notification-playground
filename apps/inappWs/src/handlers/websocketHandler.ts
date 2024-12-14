@@ -74,7 +74,6 @@ export const setupWebSocketServer = (server: http.Server): WebSocketServer => {
                         }
                     });
                     sendUnReadCountMessageToClients(data.content.data.subId);
-                    console.log('Read notifications from client:', clientsReadNotificationsMap[clientId]);
                 }
             }
         });
