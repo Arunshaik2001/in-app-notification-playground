@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import express, { Request, Response } from 'express';
-import sendRouter from "./sendRouter";
+import sendRouter, {redisClient} from "./sendRouter";
 import cors from "cors";
 import authRouter from "./authRouter";
 dotenv.config();
@@ -24,4 +24,10 @@ app.get('/', (req: Request, res: Response) => {
 
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);
+});
+
+process.on('SIGINT', async () => {
+  await redisClient.quit();
+  console.log('Closing Redis client...');
+  process.exit(0);
 });
