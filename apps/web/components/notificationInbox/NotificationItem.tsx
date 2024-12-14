@@ -13,9 +13,9 @@ const colors = [
 
 const NotificationItem: React.FC<NotificationItemProps> = ({ notification }) => (
     <motion.div
-        whileTap={{scale: 0.9, rotate: -10}}
-        whileHover={{scale: 1.1}}
-        transition={{type: "spring", stiffness: 300}}
+        whileTap={{scale: 1, rotate: -1}}
+        whileHover={{scale: 1.03}}
+        transition={{type: "spring", stiffness: 200}}
     >
         <li data-id={notification.id}
             className=" notification-item border border-gray-300 dark:border-gray-700 rounded-lg p-4 shadow-sm bg-white dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-gray-600 transition-all duration-200">
