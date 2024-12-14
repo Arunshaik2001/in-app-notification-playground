@@ -1,15 +1,9 @@
 import {Router, Request, Response, NextFunction} from 'express';
-import { createClient } from 'redis';
 import {
     SendNotificationRequest,
 } from "@repo/types/types";
+import {redisClient} from "./config/redisConfig";
 const router = Router();
-
-export const redisClient = createClient({
-    url: process.env.REDIS_URL || 'redis://localhost:6379'
-});
-
-redisClient.connect().then(r => console.log('successfully connected to redis'));
 
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     try {

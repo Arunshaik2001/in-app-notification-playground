@@ -30,3 +30,7 @@ export type Action = {
     actionUrl: string;
     label: string;
 }
+
+export type InvalidateCacheRequest = {
+    secretKey: string;
+};

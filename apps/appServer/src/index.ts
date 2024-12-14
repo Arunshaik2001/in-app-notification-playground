@@ -1,8 +1,11 @@
 import dotenv from "dotenv";
 import express, { Request, Response } from 'express';
-import sendRouter, {redisClient} from "./sendRouter";
+import sendRouter from "./sendRouter";
 import cors from "cors";
 import authRouter from "./authRouter";
+import invalidateCacheRouter from "./invalidateCacheRouter";
+import {initRedisConfig, redisClient} from './config/redisConfig';
+
 dotenv.config();
 
 const app = express();
@@ -15,8 +18,11 @@ app.use(cors({
 }));
 app.use(express.json());
 
-app.use("/v1/send", sendRouter);
 app.use("/v1/getToken", authRouter);
+
+initRedisConfig()
+app.use("/v1/send", sendRouter);
+app.use("/v1/invalidateCache", invalidateCacheRouter);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello World!');
