@@ -4,7 +4,7 @@ This webapp simply uses websockets to get notifications in real-time.
 
 
 
-https://github.com/user-attachments/assets/062f3839-24ec-46f3-9597-ec20d19778c7
+https://github.com/user-attachments/assets/755fc411-51dd-4171-aae7-3fe12442eff3
 
 
 
