@@ -20,7 +20,6 @@ sendTestRouter.post('/', async (req: Request, res: Response, next: NextFunction)
         for (let i=0; i < 20; i++){
             for (let index = 0; index < body.subId.length; index++) {
                 const clientId = body.subId[index]!;
-                console.log(clientId);
                 const payload: SendNotificationRequest = {
                     ...body,
                     subId: clientId,
