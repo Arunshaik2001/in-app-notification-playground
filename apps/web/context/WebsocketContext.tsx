@@ -30,6 +30,9 @@ interface WebSocketProviderProps {
     url: string;
 }
 
+const tokenAbortController = new AbortController();
+const getTokenTimeout = setTimeout(() => tokenAbortController.abort(), 5000);
+
 export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children,url, initialPayload, reconnectDelay = 5000 }) => {
     const [isConnected, setIsConnected] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -49,7 +52,10 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children,u
                 body: JSON.stringify({
                     subId: initialPayload.content.data.subId,
                 }),
+                signal: tokenAbortController.signal,
             });
+
+            clearTimeout(getTokenTimeout);
 
             if (!res.ok) {
                 toast.error("Couldn't connect to server");
