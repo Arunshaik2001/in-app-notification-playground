@@ -95,8 +95,8 @@ export const setupWebSocketServer = (server: http.Server): WebSocketServer => {
 };
 
 const updateNotificationStatusInCache = async (subId: string, notificationId: number, isRead: boolean): Promise<void> => {
-    const notifications = await redisCacheHandler.getNotificationsFromCache(subId);
-    const readNotifications = await redisCacheHandler.getReadNotificationsFromCache(subId);
+    const notifications = redisCacheHandler.getNotificationsFromCache(subId);
+    const readNotifications = redisCacheHandler.getReadNotificationsFromCache(subId);
 
     // Update notification status
     const updatedNotifications = notifications.map(notification => {
@@ -114,8 +114,8 @@ const updateNotificationStatusInCache = async (subId: string, notificationId: nu
     }
 
     // Save updated data to Redis
-    await redisCacheHandler.setNotificationsInCache(subId, updatedNotifications);
-    await redisCacheHandler.setReadNotificationsInCache(subId, readNotifications);
+    redisCacheHandler.setNotificationsInCache(subId, updatedNotifications);
+    redisCacheHandler.setReadNotificationsInCache(subId, readNotifications);
 };
 
 export const sendNotificationsToClient = (subId: string, payload: WebsocketTransactionPayload): void => {

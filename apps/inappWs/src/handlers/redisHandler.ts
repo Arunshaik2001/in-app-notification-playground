@@ -47,8 +47,6 @@ const handleRedisMessage: RedisMessageHandler = async (message, channel) => {
                     },
                 },
             };
-            sendNotificationsToClient(notification.subId, payload);
-
             // Retrieve existing notifications from Redis
             const existingNotifications = await redisCacheHandler.getNotificationsFromCache(notification.subId);
 
@@ -59,7 +57,8 @@ const handleRedisMessage: RedisMessageHandler = async (message, channel) => {
             ];
 
             // Update the cached notifications in Redis
-            await redisCacheHandler.setNotificationsInCache(notification.subId, updatedNotifications);
+            redisCacheHandler.setNotificationsInCache(notification.subId, updatedNotifications);
+            sendNotificationsToClient(notification.subId, payload);
         }
     } catch (err) {
         console.error('Failed to handle Redis message:', err);

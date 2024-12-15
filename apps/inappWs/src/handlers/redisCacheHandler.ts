@@ -10,39 +10,49 @@ export const setupRedisCache = async (): Promise<void> => {
     }
 };
 
+const clientNotifications: {[key: string]: Notification[]} = {}
+const clientReadNotifications: {[key: string]: Set<number>} = {}
+
 export const redisCacheHandler = {
-    async getNotificationsFromCache(subId: string): Promise<Notification[]> {
+    getNotificationsFromCache(subId: string): Notification[] {
         try {
-            const data = await redisCacheConfig.hGet("notifications", subId);
-            // console.log(`notifications ${data}`);
-            return data ? JSON.parse(data) : [];
+            //const data = await redisCacheConfig.hGet("notifications", subId);
+            const notificationsData: Notification[] = clientNotifications[subId] ?? [];
+            // console.log(`notifications ${notificationsData}`);
+            //console.log(`notificationsLength ${notificationsData.length}`);
+            return notificationsData;
         } catch (err) {
             return [];
         }
     },
 
-    async setNotificationsInCache(subId: string, notifications: Notification[]): Promise<void> {
+    setNotificationsInCache(subId: string, notifications: Notification[]): void {
         try{
-            await redisCacheConfig.hSet("notifications", subId, JSON.stringify(notifications));
+            //console.log(`redis notifications set ${clientReadNotifications.length}`);
+            //await redisCacheConfig.hSet("notifications", subId, JSON.stringify(notifications));
+            clientNotifications[subId] = notifications;
         } catch (err) {
             console.error('Error setting notifications from Redis channels:', err);
         }
     },
 
-    async getReadNotificationsFromCache(subId: string): Promise<Set<number>> {
+    getReadNotificationsFromCache(subId: string): Set<number> {
         try {
-            const data = await redisCacheConfig.hGet("readNotifications", subId);
-            // console.log(`read notifications ${data}`);
-            return data ? new Set(JSON.parse(data)) : new Set();
+            //const data = await redisCacheConfig.hGet("readNotifications", subId);
+            //console.log(`read notifications ${clientReadNotifications[subId]?.size}`);
+            //return data ? new Set(JSON.parse(data)) : new Set();
+            return clientReadNotifications[subId] ?? new Set;
         } catch (err) {
             console.error('Error setting readNotifications from Redis channels:', err);
             return new Set;
         }
     },
 
-    async setReadNotificationsInCache(subId: string, readNotifications: Set<number>): Promise<void> {
+    setReadNotificationsInCache(subId: string, readNotifications: Set<number>): void {
         try {
-            await redisCacheConfig.hSet("readNotifications", subId, JSON.stringify([...readNotifications]));
+            //console.log(`redis read notifications set ${readNotifications.size}`);
+            //await redisCacheConfig.hSet("readNotifications", subId, JSON.stringify([...readNotifications]));
+            clientReadNotifications[subId] = readNotifications;
         } catch (err) {
             console.error('Error setting readNotifications from Redis channels:', err);
         }
