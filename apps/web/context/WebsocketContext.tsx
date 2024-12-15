@@ -31,7 +31,7 @@ interface WebSocketProviderProps {
 }
 
 const tokenAbortController = new AbortController();
-const getTokenTimeout = setTimeout(() => tokenAbortController.abort(), 5000);
+const getTokenTimeout = setTimeout(() => tokenAbortController.abort(), 10000);
 
 export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children,url, initialPayload, reconnectDelay = 5000 }) => {
     const [isConnected, setIsConnected] = useState(false);
@@ -41,9 +41,14 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children,u
     const reconnectAttempts = useRef(0);
     const [readNotificationsSet, setReadNotificationsSet] = useState<Set<number>>(new Set());
 
-
+    const showConnectingToServerToast = useRef(true);
     const connectWebSocket = async () => {
         console.log("Attempting to connect to WebSocket...");
+        let connectingToServerToastId: string | number | undefined;
+        if(showConnectingToServerToast.current){
+            connectingToServerToastId = toast.info('Please wait, connecting to server.');
+            showConnectingToServerToast.current = false;
+        }
         let token;
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_APP_SERVER_URL}/getToken`, {
@@ -58,7 +63,6 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children,u
             clearTimeout(getTokenTimeout);
 
             if (!res.ok) {
-                toast.error("Couldn't connect to server");
                 throw new Error(`Error fetching token: ${res.statusText}`);
             }
 
@@ -66,11 +70,21 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children,u
             token = data.token;
 
             if (!token) {
-                toast.error("Couldn't connect to server");
                 throw new Error("Token not found in response");
             }
         } catch (e) {
             console.error("Error fetching token:", e);
+            if(connectingToServerToastId){
+                toast.dismiss(connectingToServerToastId);
+            }
+            toast.error("Couldn't connect to server", {
+                duration: 5000,
+                style: {
+                    backgroundColor: "red",
+                    color: "white",
+                },
+            });
+            return;
         }
 
         const ws = new WebSocket(`${url}?token=${token}`);
@@ -78,7 +92,15 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children,u
 
         ws.onopen = () => {
             console.log("WebSocket connected");
-            toast.success("Successfully connected to WebSocket server.");
+            if(connectingToServerToastId){
+                toast.dismiss(connectingToServerToastId);
+            }
+            toast.success("Successfully connected to server.", {
+                style: {
+                    backgroundColor: "green",
+                    color: "white",
+                },
+            });
             setIsConnected(true);
             reconnectAttempts.current = 0; // Reset reconnect attempts
 
@@ -111,7 +133,13 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children,u
         ws.onerror = (error) => {
             console.error("WebSocket error:", error);
             if(reconnectAttempts.current == 5){
-                toast.error("Couldn't connect to server");
+                toast.error("Couldn't connect to server", {
+                    duration: 5000,
+                    style: {
+                        backgroundColor: "red",
+                        color: "white",
+                    },
+                });
             }
         };
 
