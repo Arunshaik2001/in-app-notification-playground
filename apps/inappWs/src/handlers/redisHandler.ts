@@ -48,7 +48,7 @@ const handleRedisMessage: RedisMessageHandler = async (message, channel) => {
                 },
             };
             // Retrieve existing notifications from Redis
-            const existingNotifications = await inMemoryCacheHandler.getNotificationsFromCache(notification.subId);
+            const existingNotifications = inMemoryCacheHandler.getNotificationsFromCache(notification.subId);
 
             // Add the new notification to the cached list
             const updatedNotifications = [

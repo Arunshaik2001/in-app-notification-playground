@@ -4,6 +4,7 @@ import {rawDataToJson} from "@repo/utils/utils";
 import http from "http";
 import jwt from 'jsonwebtoken';
 import {inMemoryCacheHandler} from "./inMemoryCacheHandler";
+import {redisCacheHandler} from "./redisCacheHandler";
 
 export const clients: Map<string, Array<WebSocket>> = new Map<string, Array<WebSocket>>();
 
@@ -41,8 +42,21 @@ export const setupWebSocketServer = (server: http.Server): WebSocketServer => {
                 console.log(`Total unique connections live: ${clients.size}`);
 
                 // Fetch notifications from Redis cache
-                const cachedNotifications = inMemoryCacheHandler.getNotificationsFromCache(clientId);
-                const unreadCount = inMemoryCacheHandler.getUnreadCount(clientId);
+                let cachedNotifications = inMemoryCacheHandler.getNotificationsFromCache(clientId);
+                let unreadCount = 0;
+
+                if(cachedNotifications.length == 0) {
+                    cachedNotifications = await redisCacheHandler.getNotificationsFromCache(clientId);
+                    const readNotifications = await redisCacheHandler.getReadNotificationsFromCache(clientId);
+
+                    inMemoryCacheHandler.setNotificationsInCache(clientId, cachedNotifications);
+                    inMemoryCacheHandler.setReadNotificationsInCache(clientId, readNotifications);
+                }
+
+                unreadCount = inMemoryCacheHandler.getUnreadCount(clientId);
+
+                console.log(`cachedNotifications ${cachedNotifications.length}`);
+                console.log(`unReadCount ${unreadCount}`);
 
                 if (cachedNotifications.length > 0) {
                     const payLoad: WebsocketTransactionPayload = {
@@ -78,13 +92,21 @@ export const setupWebSocketServer = (server: http.Server): WebSocketServer => {
             }
         });
 
-        ws.on("close", (code) => {
+        ws.on("close", async (code) => {
             console.log(`WebSocket connection closed: ${code}`);
             if (clientId) {
                 if((clients.get(clientId) ?? [])!.includes(ws)){
                     clients.set(clientId, (clients.get(clientId) ?? [])!.filter(socket => socket !== ws));
                     if((clients.get(clientId) ?? []).length == 0){
                         clients.delete(clientId);
+                    }
+
+                    const notifications = inMemoryCacheHandler.getNotificationsFromCache(clientId);
+                    const unreadNotifications = inMemoryCacheHandler.getReadNotificationsFromCache(clientId);
+
+                    if (notifications.length > 0) {
+                        await redisCacheHandler.setNotificationsInCache(clientId, notifications);
+                        await redisCacheHandler.setReadNotificationsFromCache(clientId, unreadNotifications);
                     }
                 }
             }

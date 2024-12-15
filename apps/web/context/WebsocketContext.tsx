@@ -2,6 +2,7 @@
 
 import React, {createContext, useContext, useEffect, useRef, useState} from 'react';
 import {Notification, WebsocketTransactionPayload} from "@repo/types/types";
+import {toast} from "sonner";
 
 interface WebSocketContextType {
     isConnected: boolean;
@@ -40,24 +41,30 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children,u
 
     const connectWebSocket = async () => {
         console.log("Attempting to connect to WebSocket...");
+        let token;
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_APP_SERVER_URL}/getToken`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    subId: initialPayload.content.data.subId,
+                }),
+            });
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_APP_SERVER_URL}/getToken`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                subId: initialPayload.content.data.subId,
-            }),
-        });
+            if (!res.ok) {
+                toast.error("Couldn't connect to server");
+                throw new Error(`Error fetching token: ${res.statusText}`);
+            }
 
-        if (!res.ok) {
-            throw new Error(`Error fetching token: ${res.statusText}`);
-        }
+            const data = await res.json();
+            token = data.token;
 
-        const data = await res.json();
-        const token = data.token;
-
-        if (!token) {
-            throw new Error("Token not found in response");
+            if (!token) {
+                toast.error("Couldn't connect to server");
+                throw new Error("Token not found in response");
+            }
+        } catch (e) {
+            console.error("Error fetching token:", e);
         }
 
         const ws = new WebSocket(`${url}?token=${token}`);
@@ -65,6 +72,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children,u
 
         ws.onopen = () => {
             console.log("WebSocket connected");
+            toast.success("Successfully connected to WebSocket server.");
             setIsConnected(true);
             reconnectAttempts.current = 0; // Reset reconnect attempts
 
@@ -96,6 +104,9 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children,u
 
         ws.onerror = (error) => {
             console.error("WebSocket error:", error);
+            if(reconnectAttempts.current == 5){
+                toast.error("Couldn't connect to server");
+            }
         };
 
         ws.onclose = (event) => {

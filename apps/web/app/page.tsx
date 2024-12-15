@@ -6,6 +6,7 @@ import {NotificationIcon} from "../components/notificationInbox/NotificationIcon
 import useIdentifier from "../hooks/useIdentifier";
 import {WebsocketTransactionPayload} from "@repo/types/types";
 import {WebSocketProvider} from "../context/WebsocketContext";
+import { Toaster } from 'sonner';
 
 export default function Home() {
 
@@ -21,6 +22,7 @@ export default function Home() {
 
     return (
         <WebSocketProvider initialPayload={initialPayload} reconnectDelay={3000} url={process.env.NEXT_PUBLIC_WEBSOCKET_URL!}>
+            <Toaster />
             <div className="relative flex flex-col lg:flex-row gap-4 w-full min-h-screen dark:bg-gray-800">
                 <div className="absolute top-4 right-4">
                     <ThemeToggle/>
