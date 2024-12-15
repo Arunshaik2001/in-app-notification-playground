@@ -5,6 +5,7 @@ import cors from "cors";
 import authRouter from "./authRouter";
 import invalidateCacheRouter from "./invalidateCacheRouter";
 import {initRedisConfig, redisClient} from './config/redisConfig';
+import sendTestRouter from "./sendTestRouter";
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use("/v1/getToken", authRouter);
 
 initRedisConfig()
 app.use("/v1/send", sendRouter);
+app.use("/v1/sendTest", sendTestRouter);
 app.use("/v1/invalidateCache", invalidateCacheRouter);
 
 app.get('/', (req: Request, res: Response) => {
