@@ -3,7 +3,7 @@ import { WebsocketTransactionPayload, Notification } from "@repo/types/types";
 import {rawDataToJson} from "@repo/utils/utils";
 import http from "http";
 import jwt from 'jsonwebtoken';
-import {redisCacheHandler} from "./redisCacheHandler";
+import {inMemoryCacheHandler} from "./inMemoryCacheHandler";
 
 export const clients: Map<string, Array<WebSocket>> = new Map<string, Array<WebSocket>>();
 
@@ -41,8 +41,8 @@ export const setupWebSocketServer = (server: http.Server): WebSocketServer => {
                 console.log(`Total unique connections live: ${clients.size}`);
 
                 // Fetch notifications from Redis cache
-                const cachedNotifications = await redisCacheHandler.getNotificationsFromCache(clientId);
-                const unreadCount = await redisCacheHandler.getUnreadCount(clientId);
+                const cachedNotifications = inMemoryCacheHandler.getNotificationsFromCache(clientId);
+                const unreadCount = inMemoryCacheHandler.getUnreadCount(clientId);
 
                 if (cachedNotifications.length > 0) {
                     const payLoad: WebsocketTransactionPayload = {
@@ -95,8 +95,8 @@ export const setupWebSocketServer = (server: http.Server): WebSocketServer => {
 };
 
 const updateNotificationStatusInCache = async (subId: string, notificationId: number, isRead: boolean): Promise<void> => {
-    const notifications = redisCacheHandler.getNotificationsFromCache(subId);
-    const readNotifications = redisCacheHandler.getReadNotificationsFromCache(subId);
+    const notifications = inMemoryCacheHandler.getNotificationsFromCache(subId);
+    const readNotifications = inMemoryCacheHandler.getReadNotificationsFromCache(subId);
 
     // Update notification status
     const updatedNotifications = notifications.map(notification => {
@@ -114,8 +114,8 @@ const updateNotificationStatusInCache = async (subId: string, notificationId: nu
     }
 
     // Save updated data to Redis
-    redisCacheHandler.setNotificationsInCache(subId, updatedNotifications);
-    redisCacheHandler.setReadNotificationsInCache(subId, readNotifications);
+    inMemoryCacheHandler.setNotificationsInCache(subId, updatedNotifications);
+    inMemoryCacheHandler.setReadNotificationsInCache(subId, readNotifications);
 };
 
 export const sendNotificationsToClient = (subId: string, payload: WebsocketTransactionPayload): void => {
@@ -140,7 +140,7 @@ const sendUnReadCountMessageToClient = async (clientSocket: WebSocket, subId: st
         type: 'unreadCount',
         content: {
             data: {
-                notificationsUnreadCount: await redisCacheHandler.getUnreadCount(subId),
+                notificationsUnreadCount: inMemoryCacheHandler.getUnreadCount(subId),
             }
         }
     }

@@ -2,7 +2,6 @@ import dotenv from "dotenv";
 import { createHttpServer } from "./config/server";
 import { setupWebSocketServer } from "./handlers/websocketHandler";
 import { setupRedisSubscription } from "./handlers/redisHandler";
-import {setupRedisCache} from "./handlers/redisCacheHandler";
 
 dotenv.config();
 
@@ -12,10 +11,6 @@ setupWebSocketServer(server);
 
 setupRedisSubscription().then(() => {
   console.log("Redis subscription init successful.");
-});
-
-setupRedisCache().then(() => {
-  console.log("Redis cache client init successful.");
 });
 
 const PORT: number = Number(process.env.IN_APP_WEBSOCKET_PORT || 3001);

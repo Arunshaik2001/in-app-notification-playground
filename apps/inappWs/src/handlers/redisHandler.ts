@@ -5,7 +5,7 @@ import {
     sendNotificationsToClient
 } from "./websocketHandler";
 import {generateRandom7DigitNumber} from "@repo/utils/utils";
-import {redisCacheHandler} from "./redisCacheHandler";
+import {inMemoryCacheHandler} from "./inMemoryCacheHandler";
 
 export const setupRedisSubscription = async (): Promise<void> => {
     try {
@@ -48,7 +48,7 @@ const handleRedisMessage: RedisMessageHandler = async (message, channel) => {
                 },
             };
             // Retrieve existing notifications from Redis
-            const existingNotifications = await redisCacheHandler.getNotificationsFromCache(notification.subId);
+            const existingNotifications = await inMemoryCacheHandler.getNotificationsFromCache(notification.subId);
 
             // Add the new notification to the cached list
             const updatedNotifications = [
@@ -57,7 +57,7 @@ const handleRedisMessage: RedisMessageHandler = async (message, channel) => {
             ];
 
             // Update the cached notifications in Redis
-            redisCacheHandler.setNotificationsInCache(notification.subId, updatedNotifications);
+            inMemoryCacheHandler.setNotificationsInCache(notification.subId, updatedNotifications);
             sendNotificationsToClient(notification.subId, payload);
         }
     } catch (err) {
