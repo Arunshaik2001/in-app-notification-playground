@@ -42,14 +42,10 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children,u
     const [readNotificationsSet, setReadNotificationsSet] = useState<Set<number>>(new Set());
 
     const showConnectingToServerToast = useRef(true);
-    const connectWebSocket = async () => {
-        console.log("Attempting to connect to WebSocket...");
-        let connectingToServerToastId: string | number | undefined;
-        if(showConnectingToServerToast.current){
-            connectingToServerToastId = toast.info('Please wait, connecting to server.');
-            showConnectingToServerToast.current = false;
-        }
-        let token;
+    const fetchToken = async (): Promise<string | null> => {
+        console.log("Fetching token...");
+        let token: string | null = null;
+
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_APP_SERVER_URL}/getToken`, {
                 method: "POST",
@@ -72,19 +68,32 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children,u
             if (!token) {
                 throw new Error("Token not found in response");
             }
-        } catch (e) {
-            console.error("Error fetching token:", e);
-            if(connectingToServerToastId){
-                toast.dismiss(connectingToServerToastId);
-            }
-            toast.error("Couldn't connect to server", {
+        } catch (error) {
+            console.error("Error fetching token:", error);
+            toast.error("Couldn't fetch token.", {
                 duration: 5000,
                 style: {
                     backgroundColor: "red",
                     color: "white",
                 },
             });
+        }
+
+        return token;
+    };
+
+    const connectWebSocket = async (token: string | null) => {
+        if (!token) {
+            console.error("Cannot connect WebSocket without a valid token.");
             return;
+        }
+
+        console.log("Connecting to WebSocket...");
+        let connectingToServerToastId: string | number | undefined;
+
+        if (showConnectingToServerToast.current) {
+            connectingToServerToastId = toast.info("Please wait, connecting to server.");
+            showConnectingToServerToast.current = false;
         }
 
         const ws = new WebSocket(`${url}?token=${token}`);
@@ -143,14 +152,23 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children,u
             }
         };
 
-        ws.onclose = (event) => {
+        ws.onclose = async (event) => {
             console.warn("WebSocket connection closed:", event.code);
             setIsConnected(false);
 
-            // Attempt to reconnect
+            if (event.code === 4001) {
+                console.log("Token expired, fetching a new token...");
+                const newToken = await fetchToken();
+                if (newToken) {
+                    await connectWebSocket(newToken);
+                }
+                return;
+            }
+
+            // Attempt to reconnect without fetching a new token
             if (reconnectAttempts.current < 5) {
                 reconnectAttempts.current += 1;
-                setTimeout(connectWebSocket, reconnectDelay);
+                setTimeout(() => connectWebSocket(token), reconnectDelay);
             } else {
                 console.error("Max reconnection attempts reached");
             }
@@ -173,8 +191,14 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children,u
     };
 
     useEffect(() => {
-        // Establish WebSocket connection
-        connectWebSocket();
+        const initializeWebSocket = async () => {
+            const token = await fetchToken();
+            if (token) {
+                await connectWebSocket(token);
+            }
+        };
+
+        initializeWebSocket();
 
         return () => {
             if (socket.current && socket.current.readyState === WebSocket.OPEN) {
