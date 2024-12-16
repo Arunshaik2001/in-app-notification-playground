@@ -6,6 +6,10 @@ import TemplateSelector from "./TemplateSelector";
 import ImagePreview from "./ImagePreview";
 import useIdentifier from "../../hooks/useIdentifier";
 
+const sendNotificationAbortController = new AbortController();
+const sendNotificationTimeout = setTimeout(() => sendNotificationAbortController.abort(), 10000);
+
+
 export default function NotificationForm() {
     const [message, setMessage] = useState("");
     const [title, setTitle] = useState("");
@@ -49,7 +53,10 @@ export default function NotificationForm() {
                                     : []),
                             ],
                 }),
+                signal: sendNotificationAbortController.signal,
             });
+
+            clearTimeout(sendNotificationTimeout);
             setMessage("");
             setTitle("");
             setActionUrl1("");
