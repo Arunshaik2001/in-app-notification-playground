@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import React from "react";
 
 const geistSans = localFont({
     src: "./fonts/GeistVF.woff",
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
     title: "In-App Notifications",
     description: "In-App Notifications Playground",
     icons: {
-        icon: '/icon.jpg',
+        icon: '/favicon.ico',
     }
 };
 
