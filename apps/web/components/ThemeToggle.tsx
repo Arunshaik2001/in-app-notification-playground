@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
 
 const ThemeToggle: React.FC = () => {
-    const [theme, setTheme] = useState<"light" | "dark">("light");
+    const [theme, setTheme] = useState<"light" | "dark">("dark");
 
     // Toggle theme
     const toggleTheme = () => {
